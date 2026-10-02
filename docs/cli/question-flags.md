@@ -1,5 +1,5 @@
 ---
-type: concept
+type: reference
 title: Question flags
 description: How `typesafe ask` builds questions from `--noul`, `--choice`, `--score` and `--criterion`, and how they combine with `--questions-file`.
 tags: [cli, ask]
