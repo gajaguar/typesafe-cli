@@ -8,3 +8,4 @@
 ## 2026-10-02
 
 * **Added**: `cli/batch-ask.md`, `cli/index.md`.
+* **Added**: `conventions/public-contract.md`.
