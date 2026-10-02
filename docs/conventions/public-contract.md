@@ -2,7 +2,7 @@
 type: decision
 title: Public contract
 description: What 1.0.0 freezes (commands, flags, output fields, exit codes, settings keys, environment variables) and what stays free to change.
-tags: [release, versioning, contract]
+tags: [contract]
 status: stable
 ---
 

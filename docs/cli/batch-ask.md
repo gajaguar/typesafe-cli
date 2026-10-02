@@ -1,5 +1,5 @@
 ---
-type: concept
+type: reference
 title: Batch ask
 description: How `typesafe ask --states-file` orders its output, reports failed states and chooses its exit code.
 tags: [cli, ask]

@@ -11,3 +11,7 @@
 * **Added**: `conventions/public-contract.md`.
 * **Changed**: `release/pypi-trusted-publishing.md` names the PyPI project `typesafe-unofficial-cli`.
 * **Added**: `cli/question-flags.md`.
+* **Added**: `okf-base.yaml`, `make docs-lint`, `tools/docs-retag.py`,
+  `conventions/tag-vocabulary.md` and `toolchain/retag-notes.md`.
+* **Changed**: the first `make docs-retag` run re-assigned the tags of five
+  notes.
