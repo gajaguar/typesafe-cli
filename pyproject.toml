@@ -28,6 +28,11 @@ dependencies = [
   "typesafe-sdk>=0.7.2,<0.8",
 ]
 
+[project.urls]
+Homepage = "https://github.com/gajaguar/typesafe-cli"
+Repository = "https://github.com/gajaguar/typesafe-cli"
+Issues = "https://github.com/gajaguar/typesafe-cli/issues"
+
 [project.scripts]
 typesafe = "typesafe_unofficial_cli.main:run"
 

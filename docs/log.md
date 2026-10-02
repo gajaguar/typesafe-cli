@@ -9,3 +9,4 @@
 
 * **Added**: `cli/batch-ask.md`, `cli/index.md`.
 * **Added**: `conventions/public-contract.md`.
+* **Changed**: `release/pypi-trusted-publishing.md` names the PyPI project `typesafe-unofficial-cli`.
