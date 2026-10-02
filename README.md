@@ -67,7 +67,7 @@ provider reads only its own variable. Global options go before the command:
 
 - [x] `0.1.0`: scaffold, auth, profiles, `ask`, `models list`
 - [x] `0.2.0`: request options, `config set|get|unset`, batch `ask`, request ids
-- [ ] `1.0.0`: every SDK capability covered, contracts frozen
+- [x] `1.0.0`: every SDK capability covered, contracts frozen
 
 ## Contributing
 

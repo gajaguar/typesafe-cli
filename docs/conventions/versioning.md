@@ -20,7 +20,8 @@ The project follows [Semantic Versioning](https://semver.org/).
 | Documentation, CI, tests or development dependencies only                           | none    |
 
 Before `1.0.0` the contract is not frozen, so a breaking change bumps minor.
-`1.0.0` is the release that declares the contract stable.
+`1.0.0` is the release that declares the contract stable; the
+[public contract](public-contract.md) lists what it covers.
 
 ## When the bump happens
 

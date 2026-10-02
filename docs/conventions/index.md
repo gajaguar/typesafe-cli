@@ -8,6 +8,8 @@ Commit and branch naming, how they're enforced, and versioning.
   [Conventional Branch](https://conventionalbranch.org/).
 * [Versioning, tags and releases](versioning.md) - SemVer bump criteria, which
   bumps get a tag, and on-demand releases.
+* [Public contract](public-contract.md) - what `1.0.0` freezes and what
+  stays free to change.
 * [Help-line check](help-check.md) - `make help-check` fails on a Makefile
   target without its `##` help line.
 * [No CLAUDE.md check](claude-md-check.md) - `make claude-md-check` fails when
