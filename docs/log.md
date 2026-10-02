@@ -19,3 +19,5 @@
   `conventions/versioning.md` instead of restating it.
 * **Change**: `conventions/tag-vocabulary.md` states the tag form: lowercase, one
   word by default, no parent prefix.
+* **Change**: `conventions/versioning.md` names `make release-tag` as the way to
+  tag where the `Makefile` defines it.
