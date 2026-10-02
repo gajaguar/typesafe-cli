@@ -3,6 +3,8 @@ from __future__ import annotations
 import json
 from typing import TYPE_CHECKING
 
+import httpx2
+
 from tests.conftest import MODELS_PAYLOAD
 from typesafe_unofficial_cli.config.providers import Provider
 from typesafe_unofficial_cli.config.settings import Profile
@@ -77,3 +79,20 @@ def test_models_list_without_login_exits_configuration(runner: CliRunner, cli: t
     result = runner.invoke(cli, args)
     # Assert
     assert result.exit_code == ExitCode.CONFIGURATION
+
+
+def test_models_list_accepts_request_flags_and_prints_request_id_when_verbose(
+    runner: CliRunner, cli: typer.Typer, environ: dict[str, str], api: FakeApi
+) -> None:
+    # Arrange
+    environ["TYPESAFE_API_KEY"] = "secret"
+    api.handler = lambda _request: httpx2.Response(
+        200, json=MODELS_PAYLOAD, headers={"x-typesafe-request-id": "req_9"}
+    )
+    args = ["-v", "models", "list", "--timeout", "5", "--max-retries", "0", "--header", "X-Trace: t"]
+    # Act
+    result = runner.invoke(cli, args)
+    # Assert
+    assert result.exit_code == ExitCode.OK
+    assert "request id: req_9" in result.stderr
+    assert api.requests[0].headers["X-Trace"] == "t"

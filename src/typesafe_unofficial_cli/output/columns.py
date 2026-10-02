@@ -31,3 +31,5 @@ ANSWERS: Final = (
     Column("answer", "Answer"),
     Column("confidence", "Confidence"),
 )
+
+ANSWERS_BATCH: Final = (Column("index", "State"), *ANSWERS)

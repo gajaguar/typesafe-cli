@@ -10,6 +10,7 @@ out under this directory.
 
 ## Reference
 
+* [CLI behavior](cli/index.md) - batch `ask` input, ordering and exit codes.
 * [Conventions](conventions/index.md) - commit and branch naming, and how
   they're enforced.
 * [Toolchain](toolchain/index.md) - which layer (mise or an ecosystem
