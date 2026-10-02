@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 from typing import TYPE_CHECKING
+from typing import Final
 
 import httpx2
 import pytest
@@ -394,3 +395,115 @@ def test_ask_rejects_two_sources_reading_standard_input(
     # Assert
     assert result.exit_code == ExitCode.USAGE
     assert "--states-file" in result.stderr
+
+
+_FLAG_QUESTIONS: Final = [
+    "--noul",
+    "billing=Is this about billing?",
+    "--choice",
+    "tone=What is the tone?",
+    "--criterion",
+    "tone=calm",
+    "--criterion",
+    "tone=angry",
+    "--score",
+    "urgency=How urgent is it?",
+    "--criterion",
+    "urgency=low",
+    "--criterion",
+    "urgency=medium",
+    "--criterion",
+    "urgency=high",
+]
+
+
+@pytest.mark.usefixtures("api_key")
+def test_ask_question_flags_build_the_same_questions_as_a_file(
+    runner: CliRunner, cli: typer.Typer, api: FakeApi
+) -> None:
+    # Arrange
+    api.respond(200, SYSTEM_ONE_PAYLOAD)
+    # Act
+    result = runner.invoke(cli, ["ask", "--state", "I was charged twice.", *_FLAG_QUESTIONS])
+    # Assert
+    assert result.exit_code == ExitCode.OK
+    assert api.bodies()[0]["questions"] == QUESTIONS
+
+
+@pytest.mark.usefixtures("api_key")
+def test_ask_criterion_descriptions_split_on_the_first_colon_except_for_score(
+    runner: CliRunner, cli: typer.Typer, api: FakeApi
+) -> None:
+    # Arrange
+    api.respond(200, SYSTEM_ONE_PAYLOAD)
+    args = [
+        *("--noul", "billing=Billing?", "--criterion", "billing=true:Yes: charged", "--criterion", "billing=false"),
+        *("--choice", "tone=Tone?", "--criterion", "tone=calm", "--criterion", "tone=angry:Hostile: upset"),
+        *("--score", "urgency=Urgent?", "--criterion", "urgency=low: not now", "--criterion", "urgency=high"),
+    ]
+    # Act
+    runner.invoke(cli, ["ask", "--state", "x", *args])
+    # Assert
+    assert api.bodies()[0]["questions"] == {
+        "billing": {"type": "noul", "instructions": "Billing?", "criteria": {"true": "Yes: charged", "false": None}},
+        "tone": {"type": "choice", "instructions": "Tone?", "criteria": {"calm": None, "angry": "Hostile: upset"}},
+        "urgency": {"type": "score", "instructions": "Urgent?", "criteria": ["low: not now", "high"]},
+    }
+
+
+def test_ask_question_flag_replaces_the_file_question_with_the_same_name(
+    runner: CliRunner, cli: typer.Typer, api: FakeApi, questions_file: Path
+) -> None:
+    # Arrange
+    api.respond(200, SYSTEM_ONE_PAYLOAD)
+    args = ["ask", "--state", "x", "--questions-file", str(questions_file), "--noul", "billing=Is it a refund?"]
+    # Act
+    runner.invoke(cli, args)
+    # Assert
+    assert api.bodies()[0]["questions"] == {
+        **QUESTIONS,
+        "billing": {"type": "noul", "instructions": "Is it a refund?"},
+    }
+
+
+@pytest.mark.usefixtures("api_key")
+def test_ask_batch_accepts_question_flags_alone(
+    runner: CliRunner, cli: typer.Typer, api: FakeApi, states_file: Path
+) -> None:
+    # Arrange
+    api.respond(200, SYSTEM_ONE_PAYLOAD)
+    # Act
+    result = runner.invoke(cli, ["ask", "--states-file", str(states_file), *_FLAG_QUESTIONS])
+    # Assert
+    assert result.exit_code == ExitCode.OK
+    assert [body["questions"] for body in api.bodies()] == [QUESTIONS, QUESTIONS]
+
+
+@pytest.mark.parametrize(
+    "args",
+    [
+        pytest.param(["--noul", "billing"], id="no-equals"),
+        pytest.param(["--noul", "=Is it?"], id="empty-name"),
+        pytest.param(["--noul", "billing="], id="empty-instructions"),
+        pytest.param(["--noul", "q=A?", "--score", "q=B?", "--criterion", "q=low"], id="duplicate-name"),
+        pytest.param(["--noul", "q=A?", "--criterion", "other=true"], id="orphan-criterion"),
+        pytest.param(["--choice", "q=A?"], id="choice-without-criteria"),
+        pytest.param(["--score", "q=A?"], id="score-without-criteria"),
+        pytest.param(["--noul", "q=A?", "--criterion", "q=maybe"], id="noul-unknown-label"),
+        pytest.param(["--noul", "q=A?", "--criterion", "q=true", "--criterion", "q=true"], id="noul-repeated-label"),
+        pytest.param(["--choice", "q=A?", "--criterion", "q=:note"], id="choice-empty-label"),
+        pytest.param(["--choice", "q=A?", "--criterion", "q=a", "--criterion", "q=a"], id="choice-repeated-label"),
+        pytest.param(["--score", "q=A?", "--criterion", "q="], id="score-empty-level"),
+    ],
+)
+@pytest.mark.usefixtures("api_key")
+def test_ask_invalid_question_flags_exit_usage_without_a_request(
+    runner: CliRunner, cli: typer.Typer, api: FakeApi, args: list[str]
+) -> None:
+    # Arrange
+    argv = ["ask", "--state", "x", *args]
+    # Act
+    result = runner.invoke(cli, argv)
+    # Assert
+    assert result.exit_code == ExitCode.USAGE
+    assert api.requests == []

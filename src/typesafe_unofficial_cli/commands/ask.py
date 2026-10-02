@@ -29,6 +29,7 @@ from typesafe_unofficial_cli.services.inputs import read_extra_body
 from typesafe_unofficial_cli.services.inputs import read_questions
 from typesafe_unofficial_cli.services.inputs import read_state
 from typesafe_unofficial_cli.services.inputs import read_states
+from typesafe_unofficial_cli.services.question_flags import build_questions
 
 if TYPE_CHECKING:
     from typesafe_sdk import JSONValue
@@ -61,6 +62,25 @@ class _AskOptions(RequestOptions):
             help='JSON object of named questions, each {"type": "noul|choice|score", ...}; `-` reads standard input.',
         ),
     ] = None
+    noul: Annotated[
+        list[str] | None,
+        typer.Option("--noul", help="Yes/no question as 'name=instructions'; repeat for several."),
+    ] = None
+    choice: Annotated[
+        list[str] | None,
+        typer.Option("--choice", help="Choice question as 'name=instructions'; add labels with --criterion."),
+    ] = None
+    score: Annotated[
+        list[str] | None,
+        typer.Option("--score", help="Score question as 'name=instructions'; add ordered levels with --criterion."),
+    ] = None
+    criterion: Annotated[
+        list[str] | None,
+        typer.Option(
+            "--criterion",
+            help="Criterion of a flag-defined question as 'name=label[:description]'; repeat, in order for score.",
+        ),
+    ] = None
     states_file: Annotated[
         Path | None,
         typer.Option(
@@ -84,8 +104,8 @@ class _AskOptions(RequestOptions):
 @handle_errors
 @options_from(_AskOptions)
 def ask(ctx: typer.Context, options: _AskOptions) -> None:
-    if options.questions_file is None:
-        message = "--questions-file is required."
+    if options.questions_file is None and not (options.noul or options.choice or options.score):
+        message = "Pass --questions-file or at least one of --noul, --choice and --score."
         raise CliError(message, exit_code=ExitCode.USAGE)
     stdin_sources = [
         flag
@@ -105,7 +125,14 @@ def ask(ctx: typer.Context, options: _AskOptions) -> None:
         raise CliError(message, exit_code=ExitCode.USAGE)
     app_context = get_app_context(ctx)
     overrides = options.overrides()
-    questions = read_questions(options.questions_file)
+    # A question defined by flag replaces a file question of the same name.
+    questions = {} if options.questions_file is None else read_questions(options.questions_file)
+    questions |= build_questions(
+        noul=options.noul or [],
+        choice=options.choice or [],
+        score=options.score or [],
+        criterion=options.criterion or [],
+    )
     extra_body = None if options.extra_body is None else read_extra_body(options.extra_body)
     if options.states_file is not None:
         _ask_batch(app_context, options, overrides, questions, extra_body)

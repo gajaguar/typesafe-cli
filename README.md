@@ -39,6 +39,16 @@ echo '{"billing": {"type": "noul", "instructions": "Is this billing?"}}' \
 typesafe ask --state "I was charged twice." --questions-file questions.json
 ```
 
+Or define the questions with flags, alone or beside a file (a flag replaces a
+file question of the same name; see [question flags][question-flags]):
+
+```bash
+typesafe ask --state "I was charged twice." \
+  --noul 'billing=Is this billing?' \
+  --choice 'tone=What is the tone?' \
+  --criterion tone=calm --criterion 'tone=angry:Hostile or upset'
+```
+
 Ask the same questions about many states, one JSON value per line, with
 several requests in flight (see [batch ask][batch-ask]):
 
@@ -87,6 +97,7 @@ See [CONTRIBUTING.md][contributing].
 See [LICENSE][license].
 
 [batch-ask]: https://github.com/gajaguar/typesafe-cli/blob/main/docs/cli/batch-ask.md
+[question-flags]: https://github.com/gajaguar/typesafe-cli/blob/main/docs/cli/question-flags.md
 [contributing]: https://github.com/gajaguar/typesafe-cli/blob/main/CONTRIBUTING.md
 [license]: https://github.com/gajaguar/typesafe-cli/blob/main/LICENSE
 [advisory]: https://github.com/gajaguar/typesafe-cli/security/advisories/new

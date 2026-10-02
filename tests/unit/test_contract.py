@@ -27,12 +27,16 @@ COMMAND_SURFACE: Final = {
     "typesafe": (["--output", "--profile", "--verbose", "--version", "-o", "-p", "-v"], []),
     "ask": (
         [
+            "--choice",
             "--concurrency",
+            "--criterion",
             "--extra-body",
             "--header",
             "--max-retries",
             "--model",
+            "--noul",
             "--questions-file",
+            "--score",
             "--state",
             "--state-file",
             "--state-format",
