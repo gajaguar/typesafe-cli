@@ -1,5 +1,9 @@
 # TypeSafe Unofficial CLI
 
+[![python](https://img.shields.io/github/actions/workflow/status/gajaguar/typesafe-cli/python.yml?branch=main&style=flat-square&label=python)](https://github.com/gajaguar/typesafe-cli/actions/workflows/python.yml)
+[![PyPI](https://img.shields.io/pypi/v/typesafe-unofficial-cli?style=flat-square)](https://pypi.org/project/typesafe-unofficial-cli/)
+[![license](https://img.shields.io/github/license/gajaguar/typesafe-cli?style=flat-square)][license]
+
 > **Unofficial.** This project is not affiliated with, endorsed by, or
 > supported by TypeSafe AI or OpenRouter. "TypeSafe", "Jev" and
 > "OpenRouter" belong to their owners.
@@ -36,7 +40,7 @@ typesafe ask --state "I was charged twice." --questions-file questions.json
 ```
 
 Ask the same questions about many states, one JSON value per line, with
-several requests in flight (see [batch ask](docs/cli/batch-ask.md)):
+several requests in flight (see [batch ask][batch-ask]):
 
 ```bash
 typesafe ask --states-file states.jsonl --questions-file questions.json \
@@ -69,10 +73,20 @@ provider reads only its own variable. Global options go before the command:
 - [x] `0.2.0`: request options, `config set|get|unset`, batch `ask`, request ids
 - [x] `1.0.0`: every SDK capability covered, contracts frozen
 
+## Security
+
+Report a vulnerability privately through
+[GitHub's advisory form][advisory], not a public issue.
+
 ## Contributing
 
-See [CONTRIBUTING.md](CONTRIBUTING.md).
+See [CONTRIBUTING.md][contributing].
 
 ## License
 
-See [LICENSE](LICENSE).
+See [LICENSE][license].
+
+[batch-ask]: https://github.com/gajaguar/typesafe-cli/blob/main/docs/cli/batch-ask.md
+[contributing]: https://github.com/gajaguar/typesafe-cli/blob/main/CONTRIBUTING.md
+[license]: https://github.com/gajaguar/typesafe-cli/blob/main/LICENSE
+[advisory]: https://github.com/gajaguar/typesafe-cli/security/advisories/new

@@ -20,7 +20,7 @@ secret exists anywhere in this repository.
 
 Before the first release, add this workflow as a trusted publisher on the
 PyPI project
-(`https://pypi.org/manage/project/typesafe-cli/publishing/`, or the "pending
+(`https://pypi.org/manage/project/typesafe-unofficial-cli/publishing/`, or the "pending
 publisher" form under `https://pypi.org/manage/account/publishing/` if the
 project does not exist on PyPI yet). The PyPI project name is the `name` in
 `pyproject.toml`; if it ever differs from the repository name, register the
