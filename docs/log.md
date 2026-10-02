@@ -15,3 +15,7 @@
   `conventions/tag-vocabulary.md` and `toolchain/retag-notes.md`.
 * **Changed**: the first `make docs-retag` run re-assigned the tags of five
   notes.
+* **Change**: the `AGENTS.md` versioning section links to
+  `conventions/versioning.md` instead of restating it.
+* **Change**: `conventions/tag-vocabulary.md` states the tag form: lowercase, one
+  word by default, no parent prefix.
