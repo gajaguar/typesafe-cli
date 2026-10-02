@@ -35,6 +35,26 @@ echo '{"billing": {"type": "noul", "instructions": "Is this billing?"}}' \
 typesafe ask --state "I was charged twice." --questions-file questions.json
 ```
 
+Ask the same questions about many states, one JSON value per line, with
+several requests in flight (see [batch ask](docs/cli/batch-ask.md)):
+
+```bash
+typesafe ask --states-file states.jsonl --questions-file questions.json \
+  --concurrency 8
+```
+
+`ask` and `models list` accept `--timeout`, `--max-retries` and repeatable
+`--header 'Name: value'`; `ask` also takes `--extra-body FILE` with extra
+top-level request fields. The request id of each response is printed on
+stderr and is a `request_id` field in the records.
+
+Profile settings are managed with `config set|get|unset` (`provider`,
+`base_url`, `model`, `timeout`, `max_retries` and the global `output`):
+
+```bash
+typesafe config set model jev-latest
+```
+
 Other commands: `models list` (TypeSafe only), `auth status|logout|token`
 and `config path|list|use`.
 
@@ -46,6 +66,7 @@ provider reads only its own variable. Global options go before the command:
 ## Roadmap
 
 - [x] `0.1.0`: scaffold, auth, profiles, `ask`, `models list`
+- [x] `0.2.0`: request options, `config set|get|unset`, batch `ask`, request ids
 - [ ] `1.0.0`: every SDK capability covered, contracts frozen
 
 ## Contributing

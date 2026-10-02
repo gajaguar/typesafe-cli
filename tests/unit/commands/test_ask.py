@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 from typing import TYPE_CHECKING
 
+import httpx2
 import pytest
 
 from tests.conftest import QUESTIONS
@@ -234,3 +235,162 @@ def test_ask_table_output_lists_answers(
     result = runner.invoke(cli, args)
     # Assert
     assert result.stdout.splitlines()[:2] == ["Question,Type,Answer,Confidence", "billing,noul,0.93,"]
+
+
+def test_ask_header_flag_reaches_the_api(
+    runner: CliRunner, cli: typer.Typer, api: FakeApi, questions_file: Path
+) -> None:
+    # Arrange
+    api.respond(200, SYSTEM_ONE_PAYLOAD)
+    args = ["ask", "--state", "x", "--questions-file", str(questions_file), "--header", "X-Trace: abc"]
+    # Act
+    result = runner.invoke(cli, args)
+    # Assert
+    assert result.exit_code == ExitCode.OK
+    assert api.requests[0].headers["X-Trace"] == "abc"
+
+
+@pytest.mark.parametrize("header", ["Authorization: Bearer x", "no-separator"])
+def test_ask_rejects_unusable_headers(
+    runner: CliRunner, cli: typer.Typer, api: FakeApi, questions_file: Path, header: str
+) -> None:
+    # Arrange
+    args = ["ask", "--state", "x", "--questions-file", str(questions_file), "--header", header]
+    # Act
+    result = runner.invoke(cli, args)
+    # Assert
+    assert result.exit_code == ExitCode.USAGE
+    assert not api.requests
+
+
+def test_ask_extra_body_is_merged_into_the_request(
+    runner: CliRunner, cli: typer.Typer, api: FakeApi, questions_file: Path, tmp_path: Path
+) -> None:
+    # Arrange
+    api.respond(200, SYSTEM_ONE_PAYLOAD)
+    extra = tmp_path / "extra.json"
+    extra.write_text('{"seed": 7}', encoding="utf-8")
+    args = ["ask", "--state", "x", "--questions-file", str(questions_file), "--extra-body", str(extra)]
+    # Act
+    runner.invoke(cli, args)
+    # Assert
+    assert api.bodies()[0]["seed"] == 7
+
+
+def test_ask_extra_body_must_be_an_object(
+    runner: CliRunner, cli: typer.Typer, questions_file: Path, tmp_path: Path
+) -> None:
+    # Arrange
+    extra = tmp_path / "extra.json"
+    extra.write_text("[1]", encoding="utf-8")
+    args = ["ask", "--state", "x", "--questions-file", str(questions_file), "--extra-body", str(extra)]
+    # Act
+    result = runner.invoke(cli, args)
+    # Assert
+    assert result.exit_code == ExitCode.USAGE
+
+
+def test_ask_profile_timeout_and_retries_reach_the_client(
+    runner: CliRunner, cli: typer.Typer, services: Services, api: FakeApi, questions_file: Path
+) -> None:
+    # Arrange
+    api.respond(200, SYSTEM_ONE_PAYLOAD)
+    services.settings.save(Settings(profiles={"default": Profile(timeout=3, max_retries=1)}))
+    # Act
+    result = runner.invoke(cli, ["ask", "--state", "x", "--questions-file", str(questions_file), "--timeout", "5"])
+    # Assert
+    assert result.exit_code == ExitCode.OK
+
+
+def test_ask_prints_the_request_id_on_stderr_and_in_records(
+    runner: CliRunner, cli: typer.Typer, api: FakeApi, questions_file: Path
+) -> None:
+    # Arrange
+    api.handler = lambda _request: httpx2.Response(
+        200, json=SYSTEM_ONE_PAYLOAD, headers={"x-typesafe-request-id": "req_1"}
+    )
+    args = ["-o", "json", "ask", "--state", "x", "--questions-file", str(questions_file)]
+    # Act
+    result = runner.invoke(cli, args)
+    # Assert
+    assert "request id: req_1" in result.stderr
+    assert {row["request_id"] for row in json.loads(result.stdout)} == {"req_1"}
+
+
+@pytest.fixture(name="states_file")
+def states_file_fixture(tmp_path: Path) -> Path:
+    path = tmp_path / "states.jsonl"
+    path.write_text('"first"\n\n{"message": "second"}\n', encoding="utf-8")
+    return path
+
+
+def test_ask_batch_answers_every_state_in_input_order(
+    runner: CliRunner, cli: typer.Typer, api: FakeApi, questions_file: Path, states_file: Path
+) -> None:
+    # Arrange
+    api.respond(200, SYSTEM_ONE_PAYLOAD)
+    args = ["-o", "json", "ask", "--states-file", str(states_file), "--questions-file", str(questions_file)]
+    # Act
+    result = runner.invoke(cli, args)
+    # Assert
+    assert result.exit_code == ExitCode.OK
+    assert [row["index"] for row in json.loads(result.stdout)] == [0, 0, 0, 1, 1, 1]
+    assert {json.dumps(body["state"]) for body in api.bodies()} == {'"first"', '{"message": "second"}'}
+    assert "answered: 2" in result.stderr
+
+
+def _reject_first_state(request: httpx2.Request) -> httpx2.Response:
+    if json.loads(request.content)["state"] == "first":
+        return httpx2.Response(401, json={"detail": "bad key"})
+    return httpx2.Response(200, json=SYSTEM_ONE_PAYLOAD)
+
+
+def test_ask_batch_reports_failed_states_and_keeps_the_rest(
+    runner: CliRunner, cli: typer.Typer, api: FakeApi, questions_file: Path, states_file: Path
+) -> None:
+    # Arrange
+    api.handler = _reject_first_state
+    args = ["-o", "json", "ask", "--states-file", str(states_file), "--questions-file", str(questions_file)]
+    # Act
+    result = runner.invoke(cli, args)
+    # Assert
+    assert result.exit_code == ExitCode.AUTHENTICATION
+    assert {row["index"] for row in json.loads(result.stdout)} == {1}
+    assert "state 0:" in result.stderr
+
+
+def test_ask_batch_conflicts_with_a_single_state(
+    runner: CliRunner, cli: typer.Typer, questions_file: Path, states_file: Path
+) -> None:
+    # Arrange
+    args = ["ask", "--state", "x", "--states-file", str(states_file), "--questions-file", str(questions_file)]
+    # Act
+    result = runner.invoke(cli, args)
+    # Assert
+    assert result.exit_code == ExitCode.USAGE
+
+
+@pytest.mark.parametrize("content", ["", "5\n", "not json\n"])
+def test_ask_batch_rejects_unusable_states_files(
+    runner: CliRunner, cli: typer.Typer, questions_file: Path, tmp_path: Path, content: str
+) -> None:
+    # Arrange
+    path = tmp_path / "bad.jsonl"
+    path.write_text(content, encoding="utf-8")
+    args = ["ask", "--states-file", str(path), "--questions-file", str(questions_file)]
+    # Act
+    result = runner.invoke(cli, args)
+    # Assert
+    assert result.exit_code == ExitCode.USAGE
+
+
+def test_ask_rejects_two_sources_reading_standard_input(
+    runner: CliRunner, cli: typer.Typer, questions_file: Path
+) -> None:
+    # Arrange
+    args = ["ask", "--states-file", "-", "--questions-file", "-"]
+    # Act
+    result = runner.invoke(cli, args)
+    # Assert
+    assert result.exit_code == ExitCode.USAGE
+    assert "--states-file" in result.stderr

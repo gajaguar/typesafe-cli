@@ -26,6 +26,7 @@ from typesafe_unofficial_cli.config.settings import resolve_options
 from typesafe_unofficial_cli.config.store import SettingsStore
 from typesafe_unofficial_cli.output.registry import create_renderer
 from typesafe_unofficial_cli.output.renderer import RenderTarget
+from typesafe_unofficial_cli.runtime.client_factory import create_async_sdk_client
 from typesafe_unofficial_cli.runtime.client_factory import create_sdk_client
 from typesafe_unofficial_cli.runtime.context import AppContext
 from typesafe_unofficial_cli.runtime.context import Services
@@ -44,6 +45,7 @@ def default_services() -> Services:
             file=FileCredentialStore(credentials_file()),
         ),
         clients=create_sdk_client,
+        async_clients=create_async_sdk_client,
     )
 
 

@@ -12,6 +12,7 @@ import pytest
 from keyring.backend import KeyringBackend
 from keyring.errors import PasswordDeleteError
 from typer.testing import CliRunner
+from typesafe_sdk import AsyncTypeSafeClient
 from typesafe_sdk import RetryPolicy
 from typesafe_sdk import TypeSafeClient
 
@@ -134,6 +135,17 @@ def services_fixture(tmp_path: Path, memory_keyring: MemoryKeyring, environ: dic
             base_url=request.base_url,
             model=request.model,
             retry=RetryPolicy(max_retries=0),
+            headers=request.headers,
+            transport=httpx2.MockTransport(api.serve),
+        )
+
+    def fake_async_client(request: ClientRequest) -> AsyncTypeSafeClient:
+        return AsyncTypeSafeClient(
+            api_key=request.credential.api_key,
+            base_url=request.base_url,
+            model=request.model,
+            retry=RetryPolicy(max_retries=0),
+            headers=request.headers,
             transport=httpx2.MockTransport(api.serve),
         )
 
@@ -145,6 +157,7 @@ def services_fixture(tmp_path: Path, memory_keyring: MemoryKeyring, environ: dic
             file=FileCredentialStore(tmp_path / "credentials.toml"),
         ),
         clients=fake_client,
+        async_clients=fake_async_client,
     )
 
 

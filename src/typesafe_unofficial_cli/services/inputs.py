@@ -14,6 +14,7 @@ if TYPE_CHECKING:
     from pathlib import Path
 
     from typesafe_sdk import JSONContent
+    from typesafe_sdk import JSONValue
     from typesafe_sdk import QuestionModel
 
 STDIN_MARKER: Final = "-"
@@ -75,3 +76,28 @@ def read_questions(file: Path) -> dict[str, QuestionModel]:
             message = f'Question "{name}" ({question["type"]}) needs non-empty "criteria".'
             raise CliError(message, exit_code=ExitCode.USAGE)
     return cast("dict[str, QuestionModel]", payload)
+
+
+# One state per non-blank line, each a JSON value: a string, an object or an array.
+def read_states(file: Path) -> list[JSONContent]:
+    states: list[JSONContent] = []
+    for number, line in enumerate(_read_text(file).splitlines(), start=1):
+        if not line.strip():
+            continue
+        content = _parse_json(line, label=f"Line {number} of the states file")
+        if not isinstance(content, str | dict | list) or not content:
+            message = f"Line {number} of the states file must be a non-empty JSON string, object or array."
+            raise CliError(message, exit_code=ExitCode.USAGE)
+        states.append(cast("JSONContent", content))
+    if not states:
+        message = "The states file has no states."
+        raise CliError(message, exit_code=ExitCode.USAGE)
+    return states
+
+
+def read_extra_body(file: Path) -> dict[str, JSONValue | None]:
+    payload = _parse_json(_read_text(file), label="The extra body")
+    if not isinstance(payload, dict):
+        message = "The extra body must be a JSON object."
+        raise CliError(message, exit_code=ExitCode.USAGE)
+    return cast("dict[str, JSONValue | None]", payload)

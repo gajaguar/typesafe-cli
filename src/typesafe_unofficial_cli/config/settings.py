@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import math
 from dataclasses import dataclass
 from enum import StrEnum
 from typing import Final
@@ -30,6 +31,24 @@ class Profile(BaseModel):
     provider: Provider = Provider.TYPESAFE
     base_url: str | None = None
     model: str | None = None
+    timeout: float | None = None
+    max_retries: int | None = None
+
+    @field_validator("timeout")
+    @classmethod
+    def _require_positive_timeout(cls, value: float | None) -> float | None:
+        if value is not None and (not math.isfinite(value) or value <= 0):
+            message = "timeout must be a positive, finite number of seconds"
+            raise ValueError(message)
+        return value
+
+    @field_validator("max_retries")
+    @classmethod
+    def _require_non_negative_retries(cls, value: int | None) -> int | None:
+        if value is not None and value < 0:
+            message = "max_retries must be zero or greater"
+            raise ValueError(message)
+        return value
 
     # The API key travels in the Authorization header, so a plain-HTTP host is only accepted on loopback.
     @field_validator("base_url")

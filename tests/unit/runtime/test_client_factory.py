@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING
 
 from typesafe_unofficial_cli.auth.credentials import ApiKeyCredential
 from typesafe_unofficial_cli.runtime.client_factory import ClientRequest
+from typesafe_unofficial_cli.runtime.client_factory import create_async_sdk_client
 from typesafe_unofficial_cli.runtime.client_factory import create_sdk_client
 
 if TYPE_CHECKING:
@@ -47,3 +48,21 @@ def test_verbose_routes_the_sdk_logger_to_stderr_once() -> None:
     # Assert
     assert len(added) == 1
     assert logger.level == logging.DEBUG
+
+
+def test_factory_applies_timeout_retries_and_headers() -> None:
+    # Arrange
+    request = ClientRequest(
+        credential=ApiKeyCredential(api_key="k"),
+        base_url="https://example.com",
+        timeout=7,
+        max_retries=0,
+        headers={"X-Trace": "t"},
+    )
+    # Act
+    client = create_sdk_client(request)
+    async_client = create_async_sdk_client(request)
+    configs = [client._config, async_client._config]  # ruff: ignore[private-member-access]
+    client.close()
+    # Assert
+    assert [(config.timeout, config.default_headers["X-Trace"]) for config in configs] == [(7, "t")] * 2
