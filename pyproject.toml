@@ -3,16 +3,33 @@ requires = ["hatchling>=1.27"]
 build-backend = "hatchling.build"
 
 [project]
-name = "typesafe-cli"
+name = "typesafe-unofficial-cli"
 version = "0.1.0"
 description = "Unofficial command-line interface for TypeSafe AI System One models, on TypeSafe or OpenRouter, built on typesafe-sdk"
 readme = "README.md"
 authors = [{ name = "G.A.JAGUAR", email = "dev@gajaguar.com" }]
 license = "MIT"
 requires-python = ">=3.14"
+keywords = ["typesafe", "openrouter", "system-one", "jev", "cli"]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Environment :: Console",
+  "License :: OSI Approved :: MIT License",
+  "Programming Language :: Python :: 3.14",
+  "Typing :: Typed",
+]
+dependencies = [
+  "keyring>=25.0",
+  "platformdirs>=4.0",
+  "pydantic>=2.12",
+  "rich>=14.0",
+  "tomli-w>=1.0",
+  "typer>=0.16",
+  "typesafe-sdk>=0.7.2,<0.8",
+]
 
 [project.scripts]
-typesafe-cli = "typesafe_unofficial_cli.main:main"
+typesafe = "typesafe_unofficial_cli.main:run"
 
 [dependency-groups]
 dev = [
@@ -27,17 +44,22 @@ dev = [
 ]
 
 [tool.pytest.ini_options]
-addopts = "--cov=src --cov-report=term-missing"
+addopts = "--cov=src --cov-report=term-missing --cov-fail-under=90 -m 'not live'"
+markers = [
+  "live: hits a real System One endpoint (requires TYPESAFE_TEST_API_KEY)",
+]
 
 [tool.coverage.report]
-exclude_also = ["if __name__ == .__main__.:"]
+exclude_also = ["if __name__ == .__main__.:", "if TYPE_CHECKING:"]
 
 [tool.ruff]
 line-length = 119
 lint.select = ["ALL"]
 lint.ignore = ["CPY", "D", "missing-trailing-comma"]
 lint.isort.force-single-line = true
-lint.per-file-ignores."tests/**/*.py" = ["assert"]
+# Typer resolves command signatures at runtime, so their annotation imports must stay real imports.
+lint.per-file-ignores."src/typesafe_unofficial_cli/commands/**/*.py" = ["typing-only-standard-library-import", "typing-only-third-party-import"]
+lint.per-file-ignores."tests/**/*.py" = ["ARG", "boolean-type-hint-positional-argument", "magic-value-comparison", "assert", "too-many-arguments", "too-many-positional-arguments"]
 
 [tool.mypy]
 strict = true
@@ -52,6 +74,3 @@ load-plugins = ["pylint_gajaguar"]
 [tool.pylint."messages control"]
 disable = ["all"]
 enable = ["gajaguar"]
-
-[tool.hatch.build.targets.wheel]
-packages = ["src/typesafe_unofficial_cli"]
