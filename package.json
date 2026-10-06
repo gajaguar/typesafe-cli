@@ -2,7 +2,7 @@
 	"name": "typesafe-cli-tools",
 	"private": true,
 	"devDependencies": {
-		"cspell": "^10.3.5",
+		"cspell": "^10.3.6",
 		"markdownlint-cli2": "^0.23.3"
 	}
 }
