@@ -21,3 +21,7 @@
   word by default, no parent prefix.
 * **Change**: `conventions/versioning.md` names `make release-tag` as the way to
   tag where the `Makefile` defines it.
+
+## 2026-10-05
+
+* **Added**: `cli/questions-file.md`.
