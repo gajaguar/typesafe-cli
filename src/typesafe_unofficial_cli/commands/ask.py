@@ -30,6 +30,8 @@ from typesafe_unofficial_cli.services.inputs import read_questions
 from typesafe_unofficial_cli.services.inputs import read_state
 from typesafe_unofficial_cli.services.inputs import read_states
 from typesafe_unofficial_cli.services.question_flags import build_questions
+from typesafe_unofficial_cli.services.template import TemplateFormat
+from typesafe_unofficial_cli.services.template import render_template
 
 if TYPE_CHECKING:
     from typesafe_sdk import JSONValue
@@ -40,6 +42,13 @@ if TYPE_CHECKING:
     from typesafe_unofficial_cli.runtime.request_options import RequestOverrides
 
 APP: Final = typer.Typer()
+
+
+def _print_questions_template(value: TemplateFormat | None) -> TemplateFormat | None:
+    if value is not None:
+        typer.echo(render_template(value))
+        raise typer.Exit
+    return value
 
 
 @dataclass(frozen=True, slots=True)
@@ -59,7 +68,20 @@ class _AskOptions(RequestOptions):
         Path | None,
         typer.Option(
             "--questions-file",
-            help='JSON object of named questions, each {"type": "noul|choice|score", ...}; `-` reads standard input.',
+            help=(
+                'JSON or YAML object of named questions, each {"type": "noul|choice|score", ...}; '
+                "`-` reads standard input."
+            ),
+        ),
+    ] = None
+    questions_template: Annotated[
+        TemplateFormat | None,
+        typer.Option(
+            "--questions-template",
+            case_sensitive=False,
+            callback=_print_questions_template,
+            is_eager=True,
+            help="Print a valid questions file as json or yaml and exit.",
         ),
     ] = None
     noul: Annotated[
@@ -93,7 +115,9 @@ class _AskOptions(RequestOptions):
     ] = 4
     extra_body: Annotated[
         Path | None,
-        typer.Option("--extra-body", help="JSON object of extra top-level request fields; `-` reads standard input."),
+        typer.Option(
+            "--extra-body", help="JSON or YAML object of extra top-level request fields; `-` reads standard input."
+        ),
     ] = None
     model: Annotated[
         str | None, typer.Option("--model", help="Model name; defaults to the profile's, else jev-latest.")

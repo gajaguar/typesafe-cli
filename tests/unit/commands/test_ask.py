@@ -507,3 +507,207 @@ def test_ask_invalid_question_flags_exit_usage_without_a_request(
     # Assert
     assert result.exit_code == ExitCode.USAGE
     assert api.requests == []
+
+
+YAML_QUESTIONS: Final = """\
+billing:
+  type: noul
+  instructions: Is this billing?
+  criteria:
+    true: A charge.
+    false: Something else.
+tone:
+  type: choice
+  instructions: What is the tone?
+  criteria:
+    calm: Neutral.
+    angry: Upset.
+urgency:
+  type: score
+  instructions: How urgent is it?
+  criteria:
+    - Low.
+    - High.
+"""
+YAML_EXPECTED: Final = {
+    "billing": {
+        "type": "noul",
+        "instructions": "Is this billing?",
+        "criteria": {"true": "A charge.", "false": "Something else."},
+    },
+    "tone": {
+        "type": "choice",
+        "instructions": "What is the tone?",
+        "criteria": {"calm": "Neutral.", "angry": "Upset."},
+    },
+    "urgency": {"type": "score", "instructions": "How urgent is it?", "criteria": ["Low.", "High."]},
+}
+
+
+@pytest.mark.parametrize("name", ["questions.yaml", "questions.yml", "QUESTIONS.YAML"])
+def test_ask_reads_questions_from_a_yaml_file(
+    runner: CliRunner, cli: typer.Typer, api: FakeApi, api_key: None, tmp_path: Path, name: str
+) -> None:
+    del api_key
+    # Arrange
+    api.respond(200, SYSTEM_ONE_PAYLOAD)
+    path = tmp_path / name
+    path.write_text(YAML_QUESTIONS, encoding="utf-8")
+    # Act
+    result = runner.invoke(cli, ["ask", "--state", "x", "--questions-file", str(path)])
+    # Assert
+    assert result.exit_code == ExitCode.OK
+    assert api.bodies()[0]["questions"] == YAML_EXPECTED
+
+
+def test_ask_reads_yaml_questions_from_stdin(runner: CliRunner, cli: typer.Typer, api: FakeApi, api_key: None) -> None:
+    del api_key
+    # Arrange
+    api.respond(200, SYSTEM_ONE_PAYLOAD)
+    # Act
+    result = runner.invoke(cli, ["ask", "--state", "x", "--questions-file", "-"], input=YAML_QUESTIONS)
+    # Assert
+    assert result.exit_code == ExitCode.OK
+    assert api.bodies()[0]["questions"] == YAML_EXPECTED
+
+
+def test_ask_json_file_is_not_read_as_yaml(
+    runner: CliRunner, cli: typer.Typer, api: FakeApi, api_key: None, tmp_path: Path
+) -> None:
+    del api_key
+    # Arrange
+    path = tmp_path / "questions.json"
+    path.write_text(YAML_QUESTIONS, encoding="utf-8")
+    # Act
+    result = runner.invoke(cli, ["ask", "--state", "x", "--questions-file", str(path)])
+    # Assert
+    assert result.exit_code == ExitCode.USAGE
+    assert api.requests == []
+
+
+def test_ask_yaml_keeps_yes_no_and_dates_as_text(
+    runner: CliRunner, cli: typer.Typer, api: FakeApi, api_key: None, tmp_path: Path
+) -> None:
+    del api_key
+    # Arrange
+    api.respond(200, SYSTEM_ONE_PAYLOAD)
+    path = tmp_path / "questions.yaml"
+    path.write_text(
+        "q:\n  type: choice\n  instructions: Pick one.\n  criteria:\n    yes: on\n    no: 2026-10-05\n    off: ~\n",
+        encoding="utf-8",
+    )
+    # Act
+    result = runner.invoke(cli, ["ask", "--state", "x", "--questions-file", str(path)])
+    # Assert
+    assert result.exit_code == ExitCode.OK
+    assert api.bodies()[0]["questions"]["q"]["criteria"] == {"yes": "on", "no": "2026-10-05", "off": None}
+
+
+@pytest.mark.parametrize(
+    "questions",
+    [
+        pytest.param("1:\n  type: noul\n  instructions: x\n", id="numeric-name"),
+        pytest.param("true:\n  type: noul\n  instructions: x\n", id="boolean-name"),
+        pytest.param("q:\n  type: choice\n  instructions: x\n  criteria:\n    1: one\n", id="numeric-criterion"),
+        pytest.param("q: [unclosed\n", id="invalid-yaml"),
+        pytest.param("- a\n- b\n", id="not-an-object"),
+    ],
+)
+def test_ask_invalid_yaml_questions_exit_usage_without_a_request(
+    runner: CliRunner, cli: typer.Typer, api: FakeApi, api_key: None, tmp_path: Path, questions: str
+) -> None:
+    del api_key
+    # Arrange
+    path = tmp_path / "bad.yaml"
+    path.write_text(questions, encoding="utf-8")
+    # Act
+    result = runner.invoke(cli, ["ask", "--state", "x", "--questions-file", str(path)])
+    # Assert
+    assert result.exit_code == ExitCode.USAGE
+    assert api.requests == []
+
+
+def test_ask_stdin_that_is_neither_json_nor_yaml_exits_usage(
+    runner: CliRunner, cli: typer.Typer, api: FakeApi, api_key: None
+) -> None:
+    del api_key
+    # Arrange
+    args = ["ask", "--state", "x", "--questions-file", "-"]
+    # Act
+    result = runner.invoke(cli, args, input="q: [unclosed\n")
+    # Assert
+    assert result.exit_code == ExitCode.USAGE
+    assert api.requests == []
+
+
+def test_ask_extra_body_is_read_from_yaml(
+    runner: CliRunner, cli: typer.Typer, api: FakeApi, questions_file: Path, tmp_path: Path
+) -> None:
+    # Arrange
+    api.respond(200, SYSTEM_ONE_PAYLOAD)
+    extra = tmp_path / "extra.yaml"
+    extra.write_text("seed: 7\nprovider:\n  order: [openai]\n", encoding="utf-8")
+    args = ["ask", "--state", "x", "--questions-file", str(questions_file), "--extra-body", str(extra)]
+    # Act
+    result = runner.invoke(cli, args)
+    # Assert
+    assert result.exit_code == ExitCode.OK
+    assert api.bodies()[0]["seed"] == 7
+    assert api.bodies()[0]["provider"] == {"order": ["openai"]}
+
+
+@pytest.mark.parametrize("content", ["- 1\n", "1: one\n", "a: [unclosed\n"])
+def test_ask_invalid_yaml_extra_body_exits_usage(
+    runner: CliRunner, cli: typer.Typer, api: FakeApi, questions_file: Path, tmp_path: Path, content: str
+) -> None:
+    # Arrange
+    extra = tmp_path / "extra.yml"
+    extra.write_text(content, encoding="utf-8")
+    args = ["ask", "--state", "x", "--questions-file", str(questions_file), "--extra-body", str(extra)]
+    # Act
+    result = runner.invoke(cli, args)
+    # Assert
+    assert result.exit_code == ExitCode.USAGE
+    assert api.requests == []
+
+
+@pytest.mark.parametrize("template_format", ["json", "yaml", "YAML"])
+def test_ask_questions_template_prints_a_file_ask_accepts(
+    runner: CliRunner, cli: typer.Typer, api: FakeApi, api_key: None, tmp_path: Path, template_format: str
+) -> None:
+    del api_key
+    # Arrange
+    api.respond(200, SYSTEM_ONE_PAYLOAD)
+    printed = runner.invoke(cli, ["ask", "--questions-template", template_format])
+    path = tmp_path / f"questions.{template_format.lower()}"
+    path.write_text(printed.stdout, encoding="utf-8")
+    # Act
+    result = runner.invoke(cli, ["ask", "--state", "x", "--questions-file", str(path)])
+    # Assert
+    questions = api.bodies()[0]["questions"]
+    assert printed.exit_code == ExitCode.OK
+    assert result.exit_code == ExitCode.OK
+    assert {question["type"] for question in questions.values()} == {"noul", "choice", "score"}
+    assert all(question["instructions"] for question in questions.values())
+    assert set(questions["billing"]["criteria"]) == {"true", "false"}
+
+
+def test_ask_questions_template_needs_no_credentials_or_state(
+    runner: CliRunner, cli: typer.Typer, api: FakeApi
+) -> None:
+    # Arrange
+    args = ["ask", "--questions-template", "yaml"]
+    # Act
+    result = runner.invoke(cli, args)
+    # Assert
+    assert result.exit_code == ExitCode.OK
+    assert api.requests == []
+
+
+def test_ask_questions_template_rejects_an_unknown_format(runner: CliRunner, cli: typer.Typer) -> None:
+    # Arrange
+    args = ["ask", "--questions-template", "toml"]
+    # Act
+    result = runner.invoke(cli, args)
+    # Assert
+    assert result.exit_code == ExitCode.USAGE

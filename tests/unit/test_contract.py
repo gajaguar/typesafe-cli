@@ -36,6 +36,7 @@ COMMAND_SURFACE: Final = {
             "--model",
             "--noul",
             "--questions-file",
+            "--questions-template",
             "--score",
             "--state",
             "--state-file",
