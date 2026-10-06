@@ -10,6 +10,8 @@ out under this directory.
 
 ## Reference
 
+* [Agent skills](agents/index.md) - the plugin, its install channels and
+  updates.
 * [CLI behavior](cli/index.md) - batch `ask` input, ordering and exit codes.
 * [Conventions](conventions/index.md) - commit and branch naming, and how
   they're enforced.

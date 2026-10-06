@@ -26,7 +26,9 @@ Before `1.0.0` the contract is not frozen, so a breaking change bumps minor.
 ## When the bump happens
 
 - The pull request that introduces the change bumps the version, in its own
-  commit: `chore(release): set the version to X.Y.Z`.
+  commit: `chore(release): set the version to X.Y.Z`. The same commit sets
+  `version` in `.claude-plugin/plugin.json`; `make plugin-version-check`
+  fails when the two differ.
 - A pull request that needs no bump says so in its description.
 
 ## Tags
