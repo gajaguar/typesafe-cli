@@ -25,3 +25,7 @@
 ## 2026-10-05
 
 * **Added**: `cli/questions-file.md`.
+* **Added**: `agents/index.md`, `agents/plugin-identity.md`,
+  `agents/install-channels.md`, `agents/updates.md`.
+* **Change**: `conventions/versioning.md` says the bump commit also sets the
+  plugin version.

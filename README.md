@@ -86,6 +86,23 @@ provider reads only its own variable. Global options go before the command:
 `-p/--profile`, `-o/--output` (`table`, `json`, `jsonl`, `csv`, `id`) and
 `-v/--verbose`.
 
+## Agent skills
+
+Skills that give an agent the context to use `typesafe` without trial and
+error (see [install channels][agent-skills]):
+
+```text
+# Claude Code
+/plugin marketplace add gajaguar/typesafe-cli
+/plugin install typesafe-cli@typesafe-cli-skills
+```
+
+```bash
+# Any Agent Skills-compatible agent
+npx skills add gajaguar/typesafe-cli
+npx skills add gajaguar/typesafe-cli -a opencode -y
+```
+
 ## Roadmap
 
 - [x] `0.1.0`: scaffold, auth, profiles, `ask`, `models list`
@@ -108,6 +125,7 @@ See [LICENSE][license].
 [batch-ask]: https://github.com/gajaguar/typesafe-cli/blob/main/docs/cli/batch-ask.md
 [question-flags]: https://github.com/gajaguar/typesafe-cli/blob/main/docs/cli/question-flags.md
 [questions-file]: https://github.com/gajaguar/typesafe-cli/blob/main/docs/cli/questions-file.md
+[agent-skills]: https://github.com/gajaguar/typesafe-cli/blob/main/docs/agents/install-channels.md
 [contributing]: https://github.com/gajaguar/typesafe-cli/blob/main/CONTRIBUTING.md
 [license]: https://github.com/gajaguar/typesafe-cli/blob/main/LICENSE
 [advisory]: https://github.com/gajaguar/typesafe-cli/security/advisories/new

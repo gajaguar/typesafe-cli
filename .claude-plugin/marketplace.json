@@ -1,0 +1,12 @@
+{
+  "name": "typesafe-cli-skills",
+  "owner": { "name": "G.A.JAGUAR", "email": "dev@gajaguar.com" },
+  "description": "Agent skills for the unofficial typesafe CLI.",
+  "plugins": [
+    {
+      "name": "typesafe-cli",
+      "source": "./",
+      "description": "Skills for the unofficial typesafe CLI: auth, profiles, config and ask."
+    }
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "name": "typesafe-cli",
+  "version": "1.2.0",
+  "description": "Skills that teach agents to use the unofficial typesafe CLI: auth, profiles, config, and ask with questions files.",
+  "author": { "name": "G.A.JAGUAR", "email": "dev@gajaguar.com" },
+  "homepage": "https://github.com/gajaguar/typesafe-cli",
+  "repository": "https://github.com/gajaguar/typesafe-cli",
+  "license": "MIT",
+  "keywords": ["typesafe", "openrouter", "system-one", "jev", "cli", "skills"]
+}
