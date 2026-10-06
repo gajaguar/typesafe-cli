@@ -39,6 +39,15 @@ echo '{"billing": {"type": "noul", "instructions": "Is this billing?"}}' \
 typesafe ask --state "I was charged twice." --questions-file questions.json
 ```
 
+The file can be YAML too (`.yaml`/`.yml`, or standard input), and
+`--questions-template yaml` prints a valid one to start from (see the
+[questions file][questions-file]):
+
+```bash
+typesafe ask --questions-template yaml > questions.yaml
+typesafe ask --state "I was charged twice." --questions-file questions.yaml
+```
+
 Or define the questions with flags, alone or beside a file (a flag replaces a
 file question of the same name; see [question flags][question-flags]):
 
@@ -58,9 +67,9 @@ typesafe ask --states-file states.jsonl --questions-file questions.json \
 ```
 
 `ask` and `models list` accept `--timeout`, `--max-retries` and repeatable
-`--header 'Name: value'`; `ask` also takes `--extra-body FILE` with extra
-top-level request fields. The request id of each response is printed on
-stderr and is a `request_id` field in the records.
+`--header 'Name: value'`; `ask` also takes `--extra-body FILE` (JSON or
+YAML) with extra top-level request fields. The request id of each response is
+printed on stderr and is a `request_id` field in the records.
 
 Profile settings are managed with `config set|get|unset` (`provider`,
 `base_url`, `model`, `timeout`, `max_retries` and the global `output`):
@@ -98,6 +107,7 @@ See [LICENSE][license].
 
 [batch-ask]: https://github.com/gajaguar/typesafe-cli/blob/main/docs/cli/batch-ask.md
 [question-flags]: https://github.com/gajaguar/typesafe-cli/blob/main/docs/cli/question-flags.md
+[questions-file]: https://github.com/gajaguar/typesafe-cli/blob/main/docs/cli/questions-file.md
 [contributing]: https://github.com/gajaguar/typesafe-cli/blob/main/CONTRIBUTING.md
 [license]: https://github.com/gajaguar/typesafe-cli/blob/main/LICENSE
 [advisory]: https://github.com/gajaguar/typesafe-cli/security/advisories/new
