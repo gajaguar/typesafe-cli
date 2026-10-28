@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 from typing import Final
 
+from typesafe_sdk import BoxAnswer
 from typesafe_sdk import ChoiceAnswer
 from typesafe_sdk import NoulAnswer
 from typesafe_sdk import ScoreAnswer
@@ -27,6 +28,8 @@ def _value(answer: Answer) -> object:
             return answer.choice
         case ScoreAnswer():
             return answer.score
+        case BoxAnswer():
+            return answer.box.model_dump(mode="json")
 
 
 def request_id_of(response: SystemOneResponse) -> str | None:
