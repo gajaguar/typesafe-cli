@@ -1,5 +1,10 @@
 # Directory Update Log
 
+## 2026-10-28
+
+* **Change**: the `Makefile` runs `okflint` and `typesafe` at `@latest`, as it
+  already ran `conventional-git`, and `toolchain/layering-rule.md` matches.
+
 ## 2026-10-01
 
 * **Initialization**: Initial scaffold (python).
