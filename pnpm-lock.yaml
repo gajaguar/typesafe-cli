@@ -16,8 +16,8 @@ importers:
         specifier: ^10.5.1
         version: 10.5.1
       markdownlint-cli2:
-        specifier: ^0.24.1
-        version: 0.24.1
+        specifier: ^0.24.2
+        version: 0.24.2
 
 packages:
 
@@ -287,10 +287,6 @@ packages:
   '@types/unist@2.0.11':
     resolution: {integrity: sha512-CmBKiL6NNo/OqgmMn95Fk9Whlp2mtvIv+KNpQKN2F4SjvrEesubTRWGYSg+BnWZOnlCaSTU1sMpsBOzgbYhnsA==}
 
-  ansi-regex@6.4.0:
-    resolution: {integrity: sha512-KzTVk2tCWAHtYrvvvaP8bJKJq2pVinhLcGEQdtLIYPbmNGNyYe8QwNaTUYQp2J7/vIsUKt5QCqAfUkYyG9DkOw==}
-    engines: {node: '>=12'}
-
   ansi-regex@6.6.0:
     resolution: {integrity: sha512-XZ5apbzreCbXSKwPjJstu8R0zOi247w3XYwWxtwBXgpZrCyc1Ka7p9/xY0A9/diMewmHbEKz+FIraWaEWjlN5g==}
     engines: {node: '>=12'}
@@ -325,10 +321,6 @@ packages:
 
   character-reference-invalid@2.0.1:
     resolution: {integrity: sha512-iBZ4F4wRbyORVsu0jPV7gXkOsGYjGHPmAyv+HiHG8gi5PtC9KI2j1+v8/tlibRvjoWX027ypmG/n0HtO5t7unw==}
-
-  commander@15.0.0:
-    resolution: {integrity: sha512-z67u4ZhzCL/Tydu1lJARtEZYWbWaN7oYLHbsuzocr6y4N6WZAagG3RQ4FW61V1/0+jImpj293XfrcYnd1qxtPg==}
-    engines: {node: '>=22.12.0'}
 
   commander@15.1.0:
     resolution: {integrity: sha512-cgnQ88TRrWcC7pVq46RzJVRMktu3W2RcbnoidnfBsl1bmDCBwJS/udcIZpKoCrbAYYaCqsz1yZCVIgbIaU3ddQ==}
@@ -532,13 +524,13 @@ packages:
     peerDependencies:
       markdownlint-cli2: '>=0.0.4'
 
-  markdownlint-cli2@0.24.1:
-    resolution: {integrity: sha512-nLhes/MIPJQLm+Gmh+3jQEnwMOaalaN0wfCD2qz1247zNZ7R3r2WDHJB191x4hcy6soKAUTybp1bFK7aJGw/WA==}
+  markdownlint-cli2@0.24.2:
+    resolution: {integrity: sha512-bgxzhJkgR7t2puRgePHZYVqKzC90etPzxOC+9ZNATjAVJB2zs7EAolfF1inVsrkgYN+ykVIHIxk0WypG2VVLZA==}
     engines: {node: '>=22'}
     hasBin: true
 
-  markdownlint@0.42.1:
-    resolution: {integrity: sha512-Otolm9JX12iO2NG5cetlKfzGygpiLSlHuqXKxoT6HGhN5HtbxprJPicKZqqCQd88qOvUi/TEs3o1AmcYioVscA==}
+  markdownlint@0.42.2:
+    resolution: {integrity: sha512-IhlUBVT+kHBX+u3EjEsQdFB4q0Rl0Hx+JsGsvVkonNut1/n8Kv8yXzwk0pazC9uF35JlwMZ+LxV4CQ9YNAbG8w==}
     engines: {node: '>=22'}
 
   mdurl@2.1.0:
@@ -967,8 +959,6 @@ snapshots:
 
   '@types/unist@2.0.11': {}
 
-  ansi-regex@6.4.0: {}
-
   ansi-regex@6.6.0: {}
 
   argparse@3.0.4: {}
@@ -992,8 +982,6 @@ snapshots:
   character-entities@2.0.2: {}
 
   character-reference-invalid@2.0.1: {}
-
-  commander@15.0.0: {}
 
   commander@15.1.0: {}
 
@@ -1201,7 +1189,7 @@ snapshots:
 
   katex@0.18.10:
     dependencies:
-      commander: 15.0.0
+      commander: 15.1.0
 
   linkify-it@6.1.0:
     dependencies:
@@ -1216,25 +1204,25 @@ snapshots:
       punycode.js: 2.3.1
       uc.micro: 3.0.0
 
-  markdownlint-cli2-formatter-default@0.0.6(markdownlint-cli2@0.24.1):
+  markdownlint-cli2-formatter-default@0.0.6(markdownlint-cli2@0.24.2):
     dependencies:
-      markdownlint-cli2: 0.24.1
+      markdownlint-cli2: 0.24.2
 
-  markdownlint-cli2@0.24.1:
+  markdownlint-cli2@0.24.2:
     dependencies:
       globby: 16.2.4
       js-yaml: 5.5.0
       jsonc-parser: 3.3.1
       jsonpointer: 5.0.1
       markdown-it: 15.0.3
-      markdownlint: 0.42.1
-      markdownlint-cli2-formatter-default: 0.0.6(markdownlint-cli2@0.24.1)
+      markdownlint: 0.42.2
+      markdownlint-cli2-formatter-default: 0.0.6(markdownlint-cli2@0.24.2)
       micromatch: 4.0.8
       smol-toml: 1.9.0
     transitivePeerDependencies:
       - supports-color
 
-  markdownlint@0.42.1:
+  markdownlint@0.42.2:
     dependencies:
       micromark: 4.0.3
       micromark-core-commonmark: 2.0.4
@@ -1479,7 +1467,7 @@ snapshots:
 
   strip-ansi@7.2.0:
     dependencies:
-      ansi-regex: 6.4.0
+      ansi-regex: 6.6.0
 
   tinyglobby@0.2.17:
     dependencies:
